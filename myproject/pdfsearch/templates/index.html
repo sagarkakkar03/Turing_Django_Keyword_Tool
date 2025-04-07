@@ -1,0 +1,89 @@
+{% load custom_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF Keyword Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        h2 {
+            margin-bottom: 10px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 400px;
+            padding: 8px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            border-collapse: collapse;
+            margin-top: 20px;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Search PDFs by Keywords</h2>
+
+    <form method="POST" action="">
+        {% csrf_token %}
+        <input type="text" name="keywords" placeholder="Enter keywords separated by comma" value="{{ keywords_string|default:'' }}">
+        <button type="submit">Search</button>
+    </form>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    {% if results %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    {% for keyword in keyword_list %}
+                        <th>{{ keyword }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results %}
+                    <tr>
+                        <td><a href="{{ row.url }}" target="_blank">{{ row.title }}</a></td>
+                        {% for keyword in keyword_list %}
+                            <td>{{ row|lookup:keyword }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% elif keyword_list %}
+        <p>No results found for the given keywords.</p>
+    {% endif %}
+</body>
+</html>
