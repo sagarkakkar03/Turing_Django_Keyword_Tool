@@ -2,15 +2,23 @@
     "version": 2,
     "builds": [
       {
-        "src": "your_project_name/wsgi.py",
-        "use": "@vercel/python",
-        "config": { "runtime": "python3.10" }
+        "src": "myproject/wsgi.py",
+        "use": "@vercel/python"
+      },
+      {
+        "src": "build_files.sh",
+        "use": "@vercel/static-build",
+        "config": { "distDir": "staticfiles_build" }
       }
     ],
     "routes": [
       {
+        "src": "/static/(.*)",
+        "dest": "/static/$1"
+      },
+      {
         "src": "/(.*)",
-        "dest": "your_project_name/wsgi.py"
+        "dest": "myproject/wsgi.py"
       }
     ]
   }
