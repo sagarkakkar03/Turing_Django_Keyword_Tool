@@ -21,7 +21,7 @@ urls = [
     'https://www.bis.org/publ/qtrpdf/r_qt2206b.pdf',
     'https://reutersinstitute.politics.ox.ac.uk/sites/default/files/2024-09/Simon%20et%20al%20Chatbots%20and%20UK%20Elections.pdf',
     'https://eprints.whiterose.ac.uk/185423/1/Teachers%20Use%20of%20Chatbots2022.pdf',
-    'https://www.ncsc.gov.uk/files/Guidelines-for-secure-AI-system-development.pdf',
+    'https://www.ncsc.gov.uk/files/Guidelines-for-secure-AI-system-development.pdf', 
 ]  
 
 titles = {
@@ -137,6 +137,7 @@ from celery import chain
 
 @shared_task(bind=True)
 def process_pdf_batch(self, batch_urls, titles=None):
+    logger.info(f"[BATCH] Processing new batch of {len(batch_urls)} URLs")
     start = time.time()
     for url in batch_urls:
         title = titles.get(url, 'Untitled') if titles else url
@@ -155,24 +156,54 @@ def process_pdf_batch(self, batch_urls, titles=None):
 
 from ..models import PDFDocument, Keyword, PDFKeywordFrequency
 
+
+from django.db.models import Count, Q, Prefetch
+
 def search_pdfs(keywords):
     keywords = [word.lower() for word in keywords]
-    matching_docs = None
+    keyword_count = len(keywords)
 
-    for word in keywords:
-        doc_ids = PDFKeywordFrequency.objects.filter(keyword__word=word).values_list('document_id', flat=True)
-        matching_docs = set(doc_ids) if matching_docs is None else matching_docs & set(doc_ids)
+    # Step 1: Get the keyword objects
+    keyword_qs = Keyword.objects.filter(word__in=keywords)
+    keyword_ids = list(keyword_qs.values_list("id", flat=True))
 
-    if not matching_docs:
+    if len(keyword_ids) < keyword_count:
+        return []  # Some keywords not found at all
+
+    # Step 2: Find matching documents (that match ALL keywords)
+    matched_doc_ids = (
+        PDFKeywordFrequency.objects
+        .filter(keyword_id__in=keyword_ids)
+        .values("document_id")
+        .annotate(match_count=Count("keyword_id", distinct=True))
+        .filter(match_count=keyword_count)
+        .values_list("document_id", flat=True)
+    )
+
+    if not matched_doc_ids:
         return []
 
-    result = []
-    for doc_id in matching_docs:
-        doc = PDFDocument.objects.get(pk=doc_id)
-        row = {"url": doc.url, "title": doc.title}
-        for word in keywords:
-            freq = PDFKeywordFrequency.objects.filter(document=doc, keyword__word=word).first()
-            row[word] = freq.count if freq else 0
-        result.append(row)
+    # Step 3: Fetch all required frequency rows in one query
+    freqs = (
+        PDFKeywordFrequency.objects
+        .select_related("document", "keyword")
+        .filter(document_id__in=matched_doc_ids, keyword_id__in=keyword_ids)
+    )
 
-    return result
+    # Step 4: Build response
+    doc_map = {}
+
+    for freq in freqs:
+        doc = freq.document
+        keyword = freq.keyword.word
+
+        if doc.id not in doc_map:
+            doc_map[doc.id] = {
+                "url": doc.url,
+                "title": doc.title,
+                **{k: 0 for k in keywords}  # initialize keyword counts
+            }
+
+        doc_map[doc.id][keyword] = freq.count
+
+    return list(doc_map.values())
