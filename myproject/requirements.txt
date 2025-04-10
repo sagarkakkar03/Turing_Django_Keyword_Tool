@@ -10,16 +10,20 @@ click-didyoumean==0.3.1
 click-plugins==1.1.1
 click-repl==0.3.0
 Django==5.1.7
+django-environ==0.12.0
 flower==2.0.1
+gunicorn==23.0.0
 humanize==4.12.2
 idna==3.10
 joblib==1.4.2
 kombu==5.5.1
 mysqlclient==2.2.7
 nltk==3.9.1
+packaging==24.2
 prometheus_client==0.21.1
 prompt_toolkit==3.0.50
 psycopg2-binary==2.9.10
+PyMuPDF==1.25.5
 PyMySQL==1.1.1
 PyPDF2==3.0.1
 python-dateutil==2.9.0.post0
@@ -36,3 +40,4 @@ tzdata==2025.1
 urllib3==2.3.0
 vine==5.1.0
 wcwidth==0.2.13
+whitenoise==6.9.0
