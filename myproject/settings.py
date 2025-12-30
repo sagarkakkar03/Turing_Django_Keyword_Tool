@@ -40,6 +40,8 @@ else:
         'localhost',
         '127.0.0.1',
         'turing-django-keyword-tool.vercel.app',
+        'turing-django-keyword-tool.onrender.com',
+        '.onrender.com',
         '.vercel.app',  # Allow all Vercel preview deployments
     ]
 
@@ -199,4 +201,5 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = "json"
 CELERY_TASK_IGNORE_RESULT = True
 CELERY_TASK_ALWAYS_EAGER = True
+
 
