@@ -29,9 +29,19 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'insecure-dev-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = []
+# Configure allowed hosts for Vercel and local development
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
+else:
+    # Production: explicitly list allowed domains
+    ALLOWED_HOSTS = [
+        'localhost',
+        '127.0.0.1',
+        'turing-django-keyword-tool.vercel.app',
+        '.vercel.app',  # Allow all Vercel preview deployments
+    ]
 
 
 # Application definition
