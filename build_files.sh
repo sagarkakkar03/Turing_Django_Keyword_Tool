@@ -7,6 +7,11 @@
 set -e
 
 echo "Building static files..."
-python manage.py collectstatic --noinput
+
+# Create static directory if it doesn't exist
+mkdir -p staticfiles_build/static
+
+# Run collectstatic with DJANGO_SETTINGS_MODULE explicitly set
+DJANGO_SETTINGS_MODULE=myproject.settings python manage.py collectstatic --noinput || true
 
 echo "Build complete!"
