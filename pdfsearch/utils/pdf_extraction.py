@@ -9,6 +9,7 @@ from celery.utils.log import get_task_logger
 from django.db import transaction, OperationalError
 import time
 from celery import chain
+import nltk
 try:
     stop_words = set(stopwords.words('english'))
 except LookupError:
@@ -212,4 +213,5 @@ def search_pdfs(keywords):
         doc_map[doc.id][keyword] = freq.count
 
     return list(doc_map.values())
+
 
