@@ -17,14 +17,12 @@ humanize==4.12.2
 idna==3.10
 joblib==1.4.2
 kombu==5.5.1
-mysqlclient==2.2.7
 nltk==3.9.1
 packaging==24.2
 prometheus_client==0.21.1
 prompt_toolkit==3.0.50
 psycopg2-binary==2.9.10
 PyMuPDF==1.25.5
-PyMySQL==1.1.1
 PyPDF2==3.0.1
 python-dateutil==2.9.0.post0
 pytz==2025.2
